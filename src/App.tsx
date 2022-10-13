@@ -6,7 +6,7 @@ import { authenticate } from "@akinsgre/kayak-strava-utility";
 function App() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activities, setActivities] = useState<Array<Activity>>(null);
-  const  needActivities : Boolean = true; 
+  const needActivities: Boolean = true;
 
   //Strava Credentials
   let clientID = "${REACT_APP_CLIENT_ID}";
@@ -14,7 +14,6 @@ function App() {
 
   // use current access token to call all activities
   function getActivities() {
-    
     const access: string = localStorage.getItem("accessToken");
     //const callActivities = `https://www.strava.com/api/v3/athlete/activities?access_token=${access}`;
     const callActivities = `http://localhost:8080/activities.json?${access}`;
@@ -24,14 +23,17 @@ function App() {
       .then((res) => res.data)
       .then((data) => {
         const kayakingData = [];
-        data.forEach(element => {
-
+        data.forEach((element) => {
           if (element.type === "Kayaking") {
-            const kayakElement = {"type":element.type, "name":element.name, "date":element.start_date_local};
+            const kayakElement = {
+              type: element.type,
+              name: element.name,
+              date: element.start_date_local,
+            };
             kayakingData.push(kayakElement);
           }
-      });
-        setActivities(kayakingData)
+        });
+        setActivities(kayakingData);
       })
       .then((data) => setIsLoading(false));
   }
@@ -44,9 +46,7 @@ function App() {
   }
 
   useEffect(() => {
-    console.log("Activities 3");
     getActivities();
-
   }, [needActivities]);
 
   return (
