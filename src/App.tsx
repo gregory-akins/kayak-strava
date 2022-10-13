@@ -10,14 +10,12 @@ function App() {
 
   //Strava Credentials
   let clientID = "${REACT_APP_CLIENT_ID}";
-  //let clientSecret = "${REACT_APP_CLIENT_SECRET}";
 
   // use current access token to call all activities
   function getActivities() {
     const access: string = localStorage.getItem("accessToken");
-    //const callActivities = `https://www.strava.com/api/v3/athlete/activities?access_token=${access}`;
-    const callActivities = `http://localhost:8080/activities.json?${access}`;
-
+    const url: string = process.env.REACT_APP_STRAVA_URL;
+    const callActivities = `${url}${access}`;
     axios
       .get(callActivities)
       .then((res) => res.data)
