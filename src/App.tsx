@@ -76,7 +76,7 @@ function App() {
                 <TableRow key={index}>
                   <TableCell>{list.type}</TableCell>
                   <TableCell>{list.name}</TableCell>
-                  <TableCell>{list.date.toDateString()}</TableCell>
+                  <TableCell>{new Date(list.date).toDateString()}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
