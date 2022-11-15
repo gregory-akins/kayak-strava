@@ -1,6 +1,7 @@
 {
   "extends": "ts-config-single-spa",
   "compilerOptions": {
+    "module": "commonjs",
     "moduleResolution": "node",
     "jsx": "react-jsx",
     "declarationDir": "dist"
