@@ -19,7 +19,7 @@ function App() {
 
   // use current access token to call all activities
   function getActivities() {
-    const access: string = localStorage.getItem("accessToken");
+    const access: string = sessionStorage.getItem("accessToken");
     let callActivities: string = "";
     //ToDO let's fix the useServiceConfig to use a different name
     /*eslint-disable */
@@ -83,7 +83,6 @@ function App() {
           </Table>
         </TableContainer>
       </div>
-      <div>User {localStorage.getItem("username")}</div>
     </div>
   );
 }
