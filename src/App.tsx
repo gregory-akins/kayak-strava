@@ -8,23 +8,33 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Pagination,
+  Typography,
 } from "@mui/material";
 
 import { useServiceConfig } from "@akinsgre/kayak-strava-utility";
 
-function App() {
+export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activities, setActivities] = useState<Array<Activity>>(null);
+  const [page, setPage] = useState(1);
   const needActivities: Boolean = true;
 
   // use current access token to call all activities
-  function getActivities() {
+  const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+    getActivities(value);
+  };
+
+  function getActivities(page: number = 1) {
     const access: string = sessionStorage.getItem("accessToken");
-    let callActivities: string = "";
+
     //ToDO let's fix the useServiceConfig to use a different name
     /*eslint-disable */
+
     useServiceConfig().then((value) => {
-      callActivities = `${value.stravaUrl}${access}`;
+      const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${page}&access_token=${access}`;
+      console.log("Retrieving from ", callActivities);
       axios
         .get(callActivities)
         .then((res) => res.data)
@@ -46,6 +56,7 @@ function App() {
     });
     /*eslint-enable */
   }
+
   function showActivities(isLoading, activities) {
     if (!isLoading) {
       return <div>There are {activities.length} activites</div>;
@@ -82,9 +93,14 @@ function App() {
             </TableBody>
           </Table>
         </TableContainer>
+        <Typography>Page: {page}</Typography>
+        <Pagination
+          count={1 + page}
+          page={page}
+          shape="rounded"
+          onChange={handleChange}
+        />
       </div>
     </div>
   );
 }
-
-export default App;
