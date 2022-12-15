@@ -27,12 +27,14 @@ export default function App() {
   };
 
   function getActivities(page: number = 1) {
-    const access: string = sessionStorage.getItem("accessToken");
+    let access: String = sessionStorage.getItem("accessToken");
 
     //ToDO let's fix the useServiceConfig to use a different name
     /*eslint-disable */
 
     useServiceConfig().then((value) => {
+      console.log("Access token is ", access);
+      
       const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${page}&access_token=${access}`;
       console.log("Retrieving from ", callActivities);
       axios
@@ -51,6 +53,10 @@ export default function App() {
             }
           });
           setActivities(kayakingData);
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            console.log('the error response status is:', error.response.status);             
+          }
         })
         .then((data) => setIsLoading(false));
     });

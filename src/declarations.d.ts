@@ -45,5 +45,6 @@ declare module "@akinsgre/kayak-strava-utility" {
     clientSecret: string;
     redirectUrl: string;
   }
+
   export function useServiceConfig(): Promise<ServiceConfig>;
 }
