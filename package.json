@@ -48,8 +48,10 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.0.6",
     "jest-cli": "^27.0.6",
+    "js-cookie": "^3.0.5",
     "prettier": "^2.3.2",
     "pretty-quick": "^3.1.1",
+    "react-router-dom": "^6.11.2",
     "ts-config-single-spa": "^3.0.0",
     "typescript": "^4.3.5",
     "webpack": "^5.51.1",
@@ -61,6 +63,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@mui/x-data-grid": "^5.17.19",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "single-spa": "^5.9.4",

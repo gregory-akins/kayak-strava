@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Activity from "./models/Activity";
+import { DataGrid, GridRowsProp, GridColDef } from "@mui/x-data-grid";
 import {
   TableContainer,
   Table,
@@ -10,11 +11,15 @@ import {
   TableCell,
   Pagination,
   Typography,
+  Checkbox,
+  Button,
 } from "@mui/material";
 
 import { useServiceConfig } from "@akinsgre/kayak-strava-utility";
+import StravaRedirect from "./StravaRedirect";
 
 export default function App() {
+  const label = { inputProps: { "aria-label": "Checkbox demo" } };
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activities, setActivities] = useState<Array<Activity>>(null);
   const [page, setPage] = useState(1);
@@ -33,33 +38,36 @@ export default function App() {
     /*eslint-disable */
 
     useServiceConfig().then((value) => {
-      console.log("Access token is ", access);
-      
-      const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${page}&access_token=${access}`;
-      console.log("Retrieving from ", callActivities);
-      axios
-        .get(callActivities)
-        .then((res) => res.data)
-        .then((data) => {
-          const kayakingData = [];
-          data.forEach((element) => {
-            if (element.type === "Kayaking") {
-              const kayakElement = {
-                type: element.type,
-                name: element.name,
-                date: element.start_date_local,
-              };
-              kayakingData.push(kayakElement);
+      if (!access) {
+        //TODO be smarter about this.. auth should live in one spot and potentially could happen before any API call
+      } else {
+        const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${page}&access_token=${access}`;
+
+        axios
+          .get(callActivities)
+          .then((res) => res.data)
+          .then((data) => {
+            const kayakingData = [];
+            data.forEach((element) => {
+              if (element.type === "Kayaking") {
+                const kayakElement = {
+                  type: element.type,
+                  name: element.name,
+                  date: element.start_date_local,
+                };
+                kayakingData.push(kayakElement);
+              }
+            });
+            setActivities(kayakingData);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
             }
-          });
-          setActivities(kayakingData);
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            console.log('the error response status is:', error.response.status);             
-          }
-        })
-        .then((data) => setIsLoading(false));
+          })
+          .then((data) => setIsLoading(false));
+      }
     });
+
     /*eslint-enable */
   }
 
@@ -74,38 +82,26 @@ export default function App() {
   useEffect(() => {
     getActivities();
   }, [needActivities]);
+  const columns: GridColDef[] = [
+    { field: "name", headerName: "Name", width: 150 },
+    { field: "desc", headerName: "Description", width: 150 },
+  ];
+
+  const rows: GridRowsProp = [{ id: 1, name: "Still", desc: "In Progress" }];
 
   return (
     <div className="App">
-      <div>{showActivities(isLoading, activities)}</div>
-      <div>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Type</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Date</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {activities?.map((list, index) => (
-                <TableRow key={index}>
-                  <TableCell>{list.type}</TableCell>
-                  <TableCell>{list.name}</TableCell>
-                  <TableCell>{new Date(list.date).toDateString()}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Typography>Page: {page}</Typography>
-        <Pagination
-          count={1 + page}
-          page={page}
-          shape="rounded"
-          onChange={handleChange}
-        />
+      <StravaRedirect />
+      <Button
+        variant="contained"
+        onClick={(activity) => {
+          activities?.forEach((element) => {});
+        }}
+      >
+        Import
+      </Button>
+      <div style={{ height: 300, width: "100%" }}>
+        <DataGrid rows={rows} columns={columns} />
       </div>
     </div>
   );
