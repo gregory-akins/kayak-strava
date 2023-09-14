@@ -39,6 +39,9 @@ export default function StravaRedirect() {
         //Checking if token isn't defined, current date is past the expiry date
         if (cookieToken === undefined) {
           console.log("There is no token");
+          console.log(
+            `Authenticating with ClientID ${config.clientId}, and clientSecret ${config.clientSecret}`
+          );
           userData = await authenticate(config.clientId, config.clientSecret);
         } else {
           let token: Token = JSON.parse(cookieToken) as Token;
@@ -53,7 +56,7 @@ export default function StravaRedirect() {
             token.expiry > Math.floor(Date.now() / 1000)
           ) {
             console.log("don't authenticate, just get the athlete", token);
-            getAthlete(token.access_token)
+            await getAthlete(token.access_token)
               .then((data) => {
                 console.log("Data 1", data);
                 userData = {

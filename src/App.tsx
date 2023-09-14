@@ -21,9 +21,9 @@ import StravaRedirect from "./StravaRedirect";
 export default function App() {
   const label = { inputProps: { "aria-label": "Checkbox demo" } };
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [activities, setActivities] = useState<Array<Activity>>(null);
+  const [activities, setActivities] = useState<Array<Activity>>([]);
   const [page, setPage] = useState(1);
-  const needActivities: Boolean = true;
+  const [needActivities, setNeedActivities] = useState<Boolean>(true);
 
   // use current access token to call all activities
   const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
@@ -47,47 +47,47 @@ export default function App() {
           .get(callActivities)
           .then((res) => res.data)
           .then((data) => {
-            const kayakingData = [];
+            const kayakingData: Array<Activity> = [];
             data.forEach((element) => {
               if (element.type === "Kayaking") {
-                const kayakElement = {
-                  type: element.type,
-                  name: element.name,
-                  date: element.start_date_local,
-                };
+                const kayakElement: Activity = new Activity();
+                kayakElement.id = element.id;
+                kayakElement.type = element.type;
+                kayakElement.name = element.name;
+                kayakElement.date = element.start_date_local;
+
                 kayakingData.push(kayakElement);
               }
             });
+            console.log(`Do we have kayakingData`, kayakingData);
+
             setActivities(kayakingData);
+            setNeedActivities(false);
           })
           .catch((error) => {
-            if (error.response.status === 401) {
+            console.error(error);
+            if (error?.response?.status === 401) {
             }
           })
-          .then((data) => setIsLoading(false));
+          .then((data) => {
+            setIsLoading(false);
+          });
       }
     });
 
     /*eslint-enable */
   }
 
-  function showActivities(isLoading, activities) {
-    if (!isLoading) {
-      return <div>There are {activities.length} activites</div>;
-    } else {
-      return <>Loading</>;
-    }
-  }
-
   useEffect(() => {
     getActivities();
   }, [needActivities]);
+
   const columns: GridColDef[] = [
-    { field: "name", headerName: "Name", width: 150 },
-    { field: "desc", headerName: "Description", width: 150 },
+    { field: "name", headerName: "Name", width: 300 },
+    { field: "date", headerName: "Date", width: 150 },
   ];
 
-  const rows: GridRowsProp = [{ id: 1, name: "Still", desc: "In Progress" }];
+  const rows: GridRowsProp = activities;
 
   return (
     <div className="App">
@@ -100,8 +100,8 @@ export default function App() {
       >
         Import
       </Button>
-      <div style={{ height: 300, width: "100%" }}>
-        <DataGrid rows={rows} columns={columns} />
+      <div>
+        <DataGrid style={{ height: 900 }} rows={rows} columns={columns} />
       </div>
     </div>
   );
