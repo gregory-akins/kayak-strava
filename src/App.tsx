@@ -1,105 +1,135 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Activity from "./models/Activity";
-import {
-  TableContainer,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Pagination,
-  Typography,
-} from "@mui/material";
+import { DataGrid, GridRowsProp, GridColDef } from "@mui/x-data-grid";
+import { Container, Button } from "@mui/material";
 
 import { useServiceConfig } from "@akinsgre/kayak-strava-utility";
+import StravaRedirect from "./StravaRedirect";
+const columns = [
+  {
+    field: "id",
+    headerName: "ID",
+    width: 70,
+  },
+  {
+    field: "date",
+    headerName: "Activity Date",
+    width: 70,
+  },
+  {
+    field: "name",
+    headerName: "Name",
+    flex: 1,
+  },
+];
 
 export default function App() {
+  const label = { inputProps: { "aria-label": "Checkbox demo" } };
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [activities, setActivities] = useState<Array<Activity>>(null);
+  const [activities, setActivities] = useState<Array<Activity>>([]);
   const [page, setPage] = useState(1);
-  const needActivities: Boolean = true;
-
-  // use current access token to call all activities
-  const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-    getActivities(value);
-  };
+  const [needActivities, setNeedActivities] = useState<Boolean>(true);
+  const [pageState, setPageState] = useState({
+    isLoading: false,
+    data: [],
+    total: 0,
+    page: 1,
+    pageSize: 10,
+  });
 
   function getActivities(page: number = 1) {
-    const access: string = sessionStorage.getItem("accessToken");
+    let access: String = sessionStorage.getItem("accessToken");
 
     //ToDO let's fix the useServiceConfig to use a different name
     /*eslint-disable */
-
     useServiceConfig().then((value) => {
-      const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${page}&access_token=${access}`;
-      console.log("Retrieving from ", callActivities);
-      axios
-        .get(callActivities)
-        .then((res) => res.data)
-        .then((data) => {
-          const kayakingData = [];
-          data.forEach((element) => {
-            if (element.type === "Kayaking") {
-              const kayakElement = {
-                type: element.type,
-                name: element.name,
-                date: element.start_date_local,
-              };
-              kayakingData.push(kayakElement);
+      if (access) {
+        const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${pageState.page}&access_token=${access}`;
+
+        axios
+          .get(callActivities)
+          .then((res) => res.data)
+          .then((data) => {
+            const kayakingData: Array<Activity> = [];
+            data.forEach((element) => {
+              if (element.type === "Kayaking") {
+                const kayakElement: Activity = new Activity();
+                kayakElement.id = element.id;
+                kayakElement.type = element.type;
+                kayakElement.name = element.name;
+                kayakElement.date = element.start_date_local;
+
+                kayakingData.push(kayakElement);
+              }
+            });
+            setActivities(kayakingData);
+            setNeedActivities(false);
+          })
+          .catch((error) => {
+            console.error(error);
+
+            if (error?.response?.status === 401) {
             }
+          })
+          .then((data) => {
+            setIsLoading(false);
           });
-          setActivities(kayakingData);
-        })
-        .then((data) => setIsLoading(false));
+      }
     });
     /*eslint-enable */
   }
 
-  function showActivities(isLoading, activities) {
-    if (!isLoading) {
-      return <div>There are {activities.length} activites</div>;
-    } else {
-      return <>Loading</>;
-    }
-  }
+  useEffect(() => {
+    setPageState((old) => ({ ...old, isLoading: true }));
+    getActivities();
+
+    setPageState((old) => ({
+      ...old,
+      isLoading: false,
+      data: activities,
+      total: 10,
+    }));
+  }, [activities, needActivities, pageState.page, pageState.pageSize]);
 
   useEffect(() => {
     getActivities();
-  }, [needActivities]);
+  }, [activities, needActivities]);
+
+  const rows: GridRowsProp = activities;
 
   return (
     <div className="App">
-      <div>{showActivities(isLoading, activities)}</div>
+      <StravaRedirect />
+      <Button
+        variant="contained"
+        onClick={(activity) => {
+          activities?.forEach((element) => {});
+        }}
+      >
+        Import
+      </Button>
       <div>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Type</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Date</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {activities?.map((list, index) => (
-                <TableRow key={index}>
-                  <TableCell>{list.type}</TableCell>
-                  <TableCell>{list.name}</TableCell>
-                  <TableCell>{new Date(list.date).toDateString()}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Typography>Page: {page}</Typography>
-        <Pagination
-          count={1 + page}
-          page={page}
-          shape="rounded"
-          onChange={handleChange}
-        />
+        <Container style={{ marginTop: 100, marginBottom: 100 }}>
+          <DataGrid
+            autoHeight
+            rows={pageState.data}
+            rowCount={pageState.total}
+            loading={pageState.isLoading}
+            rowsPerPageOptions={[10, 30, 50, 70, 100]}
+            pagination
+            page={pageState.page - 1}
+            pageSize={pageState.pageSize}
+            paginationMode="server"
+            onPageChange={(newPage) => {
+              setPageState((old) => ({ ...old, page: newPage + 1 }));
+            }}
+            onPageSizeChange={(newPageSize) =>
+              setPageState((old) => ({ ...old, pageSize: newPageSize }))
+            }
+            columns={columns}
+          />
+        </Container>
       </div>
     </div>
   );
