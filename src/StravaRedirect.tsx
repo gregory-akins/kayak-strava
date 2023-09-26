@@ -28,6 +28,7 @@ export default function StravaRedirect() {
       /*eslint-disable */
       try {
         const config: ServiceConfig = await useServiceConfig();
+
         clientId = config.clientId;
         secret = config.clientSecret;
         redirectUrl = config.redirectUrl;
@@ -38,27 +39,16 @@ export default function StravaRedirect() {
         let userData: Athlete;
         //Checking if token isn't defined, current date is past the expiry date
         if (cookieToken === undefined) {
-          console.log("There is no token");
-          console.log(
-            `Authenticating with ClientID ${config.clientId}, and clientSecret ${config.clientSecret}`
-          );
           userData = await authenticate(config.clientId, config.clientSecret);
         } else {
           let token: Token = JSON.parse(cookieToken) as Token;
-          console.log("Token will expire ", new Date(token.expiry * 1000));
-          console.log("Now is ", new Date());
-          console.log(
-            "Token hasn't exired yet? ",
-            token.expiry > Math.floor(Date.now() / 1000)
-          );
+
           if (
             token != undefined &&
             token.expiry > Math.floor(Date.now() / 1000)
           ) {
-            console.log("don't authenticate, just get the athlete", token);
             await getAthlete(token.access_token)
               .then((data) => {
-                console.log("Data 1", data);
                 userData = {
                   firstname: data.firstname,
                   lastname: data.lastname,
@@ -66,11 +56,7 @@ export default function StravaRedirect() {
                 setUserName(`${userData.firstname} ${userData.lastname}`);
               })
               .catch((error) => console.log("An error occurred", error));
-            console.log("What just happened");
           } else {
-            console.log(
-              "We have a cookie with a refresh Token, Let's try to refresh the token"
-            );
             token = await refreshAuth();
             //get the athlete
 
@@ -81,21 +67,27 @@ export default function StravaRedirect() {
           }
         }
         if (userData) {
-          console.log(
-            "When did we make it here?  This timey, wimey stuff is weird"
-          );
           setUserName(`${userData.firstname} ${userData.lastname}`);
         }
       } catch (error) {}
+      /*eslint-enable */
     };
     effectUser();
   }, [location.pathname, navigate]);
 
-  const handleAuthClick = () => {
-    if (clientId) {
-      const loginUrl = `http://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&approval_prompt=force&scope=activity:read_all&redirect_uri=${redirectUrl}/exchange_token`;
-      navigateToUrl(loginUrl);
+  const handleAuthClick = async () => {
+    if (!clientId) {
+      /*eslint-disable */
+      const config: ServiceConfig = await useServiceConfig();
+      /*eslint-enable */
+      clientId = config.clientId;
+      secret = config.clientSecret;
+      redirectUrl = config.redirectUrl;
     }
+
+    const loginUrl = `http://www.strava.com/oauth/authorize?client_id=${clientId}&response_type=code&approval_prompt=force&scope=activity:read_all&redirect_uri=${redirectUrl}/exchange_token`;
+
+    navigateToUrl(loginUrl);
   };
 
   return (

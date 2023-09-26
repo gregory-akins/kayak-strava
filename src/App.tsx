@@ -2,21 +2,27 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Activity from "./models/Activity";
 import { DataGrid, GridRowsProp, GridColDef } from "@mui/x-data-grid";
-import {
-  TableContainer,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Pagination,
-  Typography,
-  Checkbox,
-  Button,
-} from "@mui/material";
+import { Container, Button } from "@mui/material";
 
 import { useServiceConfig } from "@akinsgre/kayak-strava-utility";
 import StravaRedirect from "./StravaRedirect";
+const columns = [
+  {
+    field: "id",
+    headerName: "ID",
+    width: 70,
+  },
+  {
+    field: "date",
+    headerName: "Activity Date",
+    width: 70,
+  },
+  {
+    field: "name",
+    headerName: "Name",
+    flex: 1,
+  },
+];
 
 export default function App() {
   const label = { inputProps: { "aria-label": "Checkbox demo" } };
@@ -24,24 +30,22 @@ export default function App() {
   const [activities, setActivities] = useState<Array<Activity>>([]);
   const [page, setPage] = useState(1);
   const [needActivities, setNeedActivities] = useState<Boolean>(true);
-
-  // use current access token to call all activities
-  const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-    getActivities(value);
-  };
+  const [pageState, setPageState] = useState({
+    isLoading: false,
+    data: [],
+    total: 0,
+    page: 1,
+    pageSize: 10,
+  });
 
   function getActivities(page: number = 1) {
     let access: String = sessionStorage.getItem("accessToken");
 
     //ToDO let's fix the useServiceConfig to use a different name
     /*eslint-disable */
-
     useServiceConfig().then((value) => {
-      if (!access) {
-        //TODO be smarter about this.. auth should live in one spot and potentially could happen before any API call
-      } else {
-        const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${page}&access_token=${access}`;
+      if (access) {
+        const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${pageState.page}&access_token=${access}`;
 
         axios
           .get(callActivities)
@@ -59,13 +63,12 @@ export default function App() {
                 kayakingData.push(kayakElement);
               }
             });
-            console.log(`Do we have kayakingData`, kayakingData);
-
             setActivities(kayakingData);
             setNeedActivities(false);
           })
           .catch((error) => {
             console.error(error);
+
             if (error?.response?.status === 401) {
             }
           })
@@ -74,18 +77,24 @@ export default function App() {
           });
       }
     });
-
     /*eslint-enable */
   }
 
   useEffect(() => {
+    setPageState((old) => ({ ...old, isLoading: true }));
     getActivities();
-  }, [needActivities]);
 
-  const columns: GridColDef[] = [
-    { field: "name", headerName: "Name", width: 300 },
-    { field: "date", headerName: "Date", width: 150 },
-  ];
+    setPageState((old) => ({
+      ...old,
+      isLoading: false,
+      data: activities,
+      total: 10,
+    }));
+  }, [activities, needActivities, pageState.page, pageState.pageSize]);
+
+  useEffect(() => {
+    getActivities();
+  }, [activities, needActivities]);
 
   const rows: GridRowsProp = activities;
 
@@ -101,7 +110,26 @@ export default function App() {
         Import
       </Button>
       <div>
-        <DataGrid style={{ height: 900 }} rows={rows} columns={columns} />
+        <Container style={{ marginTop: 100, marginBottom: 100 }}>
+          <DataGrid
+            autoHeight
+            rows={pageState.data}
+            rowCount={pageState.total}
+            loading={pageState.isLoading}
+            rowsPerPageOptions={[10, 30, 50, 70, 100]}
+            pagination
+            page={pageState.page - 1}
+            pageSize={pageState.pageSize}
+            paginationMode="server"
+            onPageChange={(newPage) => {
+              setPageState((old) => ({ ...old, page: newPage + 1 }));
+            }}
+            onPageSizeChange={(newPageSize) =>
+              setPageState((old) => ({ ...old, pageSize: newPageSize }))
+            }
+            columns={columns}
+          />
+        </Container>
       </div>
     </div>
   );
