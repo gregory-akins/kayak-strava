@@ -1,6 +1,7 @@
 {
   "name": "@akinsgre/kayak-strava",
   "license": "MIT",
+  "version": "1.0.6",
   "scripts": {
     "start": "webpack serve --env development --port 8501 ",
     "start:standalone": "webpack serve --env standalone",
