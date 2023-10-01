@@ -1,0 +1,1 @@
+npx concurrently --names "root,layout,kayak,navbar" "npm start --prefix /Users/gregory.akins/Projects/kayak-strava-root" "npm start --prefix /Users/gregory.akins/Projects/kayak-strava-layout" "npm start --prefix /Users/gregory.akins/Projects/kayak-strava" "npm start --prefix /Users/gregory.akins/Projects/kayak-strava-navbar" ;
