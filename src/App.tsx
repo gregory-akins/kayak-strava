@@ -40,13 +40,11 @@ export default function App() {
 
   function getActivities(page: number = 1) {
     let access: String = sessionStorage.getItem("accessToken");
-
     //ToDO let's fix the useServiceConfig to use a different name
     /*eslint-disable */
     useServiceConfig().then((value) => {
       if (access) {
         const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${pageState.page}&access_token=${access}`;
-
         axios
           .get(callActivities)
           .then((res) => res.data)
@@ -91,10 +89,6 @@ export default function App() {
       total: 10,
     }));
   }, [activities, needActivities, pageState.page, pageState.pageSize]);
-
-  useEffect(() => {
-    getActivities();
-  }, [activities, needActivities]);
 
   const rows: GridRowsProp = activities;
 
