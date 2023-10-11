@@ -10,6 +10,9 @@ module.exports = (webpackConfigEnv, argv) => {
     argv,
   });
   return merge(defaultConfig, {
+    devServer: {
+      headers: { "Access-Control-Allow-Origin": "*" }      
+    },
     plugins: [],
   });
 };
