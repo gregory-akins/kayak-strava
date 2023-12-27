@@ -30,6 +30,8 @@
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@mui/material": "^5.10.12",
+    "@simbathesailor/babel-plugin-use-what-changed": "^2.1.0",
+    "@simbathesailor/use-what-changed": "^2.0.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@types/jest": "^29.2.3",

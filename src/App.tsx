@@ -6,6 +6,7 @@ import { Container, Button } from "@mui/material";
 
 import { useServiceConfig } from "@akinsgre/kayak-strava-utility";
 import StravaRedirect from "./StravaRedirect";
+
 const columns = [
   {
     field: "id",
@@ -15,7 +16,7 @@ const columns = [
   {
     field: "date",
     headerName: "Activity Date",
-    width: 70,
+    width: 120,
   },
   {
     field: "name",
@@ -38,17 +39,18 @@ export default function App() {
     pageSize: 10,
   });
 
-  function getActivities(page: number = 1) {
-    let access: String = sessionStorage.getItem("accessToken");
+  const getActivities = async (page: number = 1) => {
+    let accessToken: String = sessionStorage.getItem("accessToken");
     //ToDO let's fix the useServiceConfig to use a different name
     /*eslint-disable */
     useServiceConfig().then((value) => {
-      if (access) {
-        const callActivities: string = `${value.stravaUrl}/athlete/activities?page=${pageState.page}&access_token=${access}`;
+      if (accessToken) {
+        const callActivities: string = `${value.kayakStravaUrl}/athlete/activities?page=${pageState.page}&accessToken=${accessToken}`;    
         axios
           .get(callActivities)
           .then((res) => res.data)
           .then((data) => {
+            console.log("Did we get data from server?", data);
             const kayakingData: Array<Activity> = [];
             data.forEach((element) => {
               if (element.type === "Kayaking") {
@@ -65,9 +67,9 @@ export default function App() {
             setNeedActivities(false);
           })
           .catch((error) => {
-            console.error(error);
-
+            //
             if (error?.response?.status === 401) {
+              
             }
           })
           .then((data) => {
@@ -77,18 +79,23 @@ export default function App() {
     });
     /*eslint-enable */
   }
-
+  // (guarantee useEffect deps are in sync with useWhatChanged)
+  //activities, needActivities, pageState.page pageState.pageSize,
+  
   useEffect(() => {
-    setPageState((old) => ({ ...old, isLoading: true }));
     getActivities();
-
+  }, [pageState.page, pageState.pageSize]);
+  
+  useEffect( () => {    
+    setPageState((old) => ({ ...old, isLoading: true }));
+    
     setPageState((old) => ({
       ...old,
       isLoading: false,
       data: activities,
       total: 10,
     }));
-  }, [activities, needActivities, pageState.page, pageState.pageSize]);
+  }, [pageState.page, pageState.pageSize]);
 
   const rows: GridRowsProp = activities;
 
@@ -107,7 +114,9 @@ export default function App() {
         <Container style={{ marginTop: 100, marginBottom: 100 }}>
           <DataGrid
             autoHeight
-            rows={pageState.data}
+            rows={(() => { 
+              return pageState.data; 
+            })()}
             rowCount={pageState.total}
             loading={pageState.isLoading}
             rowsPerPageOptions={[10, 30, 50, 70, 100]}
