@@ -45,7 +45,7 @@ export default function App() {
     /*eslint-disable */
     useServiceConfig().then((value) => {
       if (accessToken) {
-        const callActivities: string = `${value.kayakStravaUrl}/athlete/activities?page=${pageState.page}&accessToken=${accessToken}`;    
+        const callActivities: string = `${value.kayakStravaUrl}/athlete/activities?page=${pageState.page}&accessToken=${accessToken}`;
         axios
           .get(callActivities)
           .then((res) => res.data)
@@ -69,7 +69,6 @@ export default function App() {
           .catch((error) => {
             //
             if (error?.response?.status === 401) {
-              
             }
           })
           .then((data) => {
@@ -78,17 +77,17 @@ export default function App() {
       }
     });
     /*eslint-enable */
-  }
+  };
   // (guarantee useEffect deps are in sync with useWhatChanged)
   //activities, needActivities, pageState.page pageState.pageSize,
-  
+
   useEffect(() => {
     getActivities();
   }, [pageState.page, pageState.pageSize]);
-  
-  useEffect( () => {    
+
+  useEffect(() => {
     setPageState((old) => ({ ...old, isLoading: true }));
-    
+
     setPageState((old) => ({
       ...old,
       isLoading: false,
@@ -114,8 +113,8 @@ export default function App() {
         <Container style={{ marginTop: 100, marginBottom: 100 }}>
           <DataGrid
             autoHeight
-            rows={(() => { 
-              return pageState.data; 
+            rows={(() => {
+              return pageState.data;
             })()}
             rowCount={pageState.total}
             loading={pageState.isLoading}

@@ -41,15 +41,13 @@ declare module "*.svg" {
 declare module "@akinsgre/kayak-strava-utility" {
   export interface ServiceConfig {
     stravaUrl: string;
-    kayakStravaUrl:string;
+    kayakStravaUrl: string;
     clientId: string;
     clientSecret: string;
     redirectUrl: string;
   }
   export function useServiceConfig(): Promise<ServiceConfig>;
-  export function authenticate(
-
-  ): Athlete;
+  export function authenticate(): Athlete;
   export function refreshStravaAuth(): Promise<Token>;
   export function getAthlete(accessToken: String): Promise<Athlete>;
   export interface Token {

@@ -20,20 +20,20 @@ export default function StravaRedirect() {
   const location = useLocation();
 
   const [userName, setUserName] = useState("");
-  
 
   useEffect(() => {
-    
-   
     const effectUser = async () => {
       const cookieToken: any = Cookies.get("token");
-      let token: Token = cookieToken ? JSON.parse(cookieToken) as Token : undefined;
+      let token: Token = cookieToken
+        ? (JSON.parse(cookieToken) as Token)
+        : undefined;
       try {
-        
         let userData: Athlete;
         //Checking if token isn't defined, current date is past the expiry date
-        if ((token === undefined || token.expiry < Math.floor(Date.now() / 1000))) {
-          console.log("Token missing or expired") ;
+        if (
+          token === undefined ||
+          token.expiry < Math.floor(Date.now() / 1000)
+        ) {
           userData = await authenticate();
         } else {
           if (
@@ -48,12 +48,11 @@ export default function StravaRedirect() {
                 } as Athlete;
                 setUserName(`${userData.firstname} ${userData.lastname}`);
               })
-              .catch((error) => console.log("An error occurred", error));
+              .catch((error) => console.error("An error occurred", error));
           } else {
-            console.log(`OK.. we have a ${token} but it's expired.  Let's try to refresh our auth`);
             token = await refreshStravaAuth();
             //get the athlete
-            
+
             userData = {
               firstname: token.athlete.firstname,
               lastname: token.athlete.lastname,
