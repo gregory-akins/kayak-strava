@@ -5,7 +5,7 @@ import {
   authenticate,
   ServiceConfig,
   Athlete,
-  refreshAuth,
+  refreshStravaAuth,
   getAthlete,
   Token,
 } from "@akinsgre/kayak-strava-utility";
@@ -15,34 +15,27 @@ import Cookies from "js-cookie";
 
 export default function StravaRedirect() {
   let clientId: string;
-  let secret: string;
   let redirectUrl: string;
   const navigate = useNavigate();
   const location = useLocation();
 
   const [userName, setUserName] = useState("");
+  
 
   useEffect(() => {
+    
+   
     const effectUser = async () => {
-      //ToDO let's fix the useServiceConfig to use a different name
-      /*eslint-disable */
+      const cookieToken: any = Cookies.get("token");
+      let token: Token = cookieToken ? JSON.parse(cookieToken) as Token : undefined;
       try {
-        const config: ServiceConfig = await useServiceConfig();
-
-        clientId = config.clientId;
-        secret = config.clientSecret;
-        redirectUrl = config.redirectUrl;
-
-        // see if we have a access_token that works
-        const cookieToken: any = Cookies.get("token");
-
+        
         let userData: Athlete;
         //Checking if token isn't defined, current date is past the expiry date
-        if (cookieToken === undefined) {
-          userData = await authenticate(config.clientId, config.clientSecret);
+        if ((token === undefined || token.expiry < Math.floor(Date.now() / 1000))) {
+          console.log("Token missing or expired") ;
+          userData = await authenticate();
         } else {
-          let token: Token = JSON.parse(cookieToken) as Token;
-
           if (
             token != undefined &&
             token.expiry > Math.floor(Date.now() / 1000)
@@ -57,9 +50,10 @@ export default function StravaRedirect() {
               })
               .catch((error) => console.log("An error occurred", error));
           } else {
-            token = await refreshAuth();
+            console.log(`OK.. we have a ${token} but it's expired.  Let's try to refresh our auth`);
+            token = await refreshStravaAuth();
             //get the athlete
-
+            
             userData = {
               firstname: token.athlete.firstname,
               lastname: token.athlete.lastname,
@@ -81,7 +75,6 @@ export default function StravaRedirect() {
       const config: ServiceConfig = await useServiceConfig();
       /*eslint-enable */
       clientId = config.clientId;
-      secret = config.clientSecret;
       redirectUrl = config.redirectUrl;
     }
 

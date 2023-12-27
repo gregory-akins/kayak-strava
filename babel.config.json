@@ -11,6 +11,12 @@
   ],
   "plugins": [
     [
+      "@simbathesailor/babel-plugin-use-what-changed",
+      {
+        "active": true
+      }
+    ],
+    [
       "@babel/plugin-transform-runtime",
       {
         "useESModules": true,
